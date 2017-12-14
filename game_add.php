@@ -1,12 +1,41 @@
 <?php
-require_once 'connexion.php';
 
-$queryGame = $connexion->prepare('SELECT * FROM game');
+//---------------- BDD
+$pdo = new PDO('mysql:host=localhost;dbname=moijv', 'root', '', array(PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING, PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
 
-$queryGame->execute();
+//---------------- SESSION
+session_start();
 
-$games = $queryGame->fetchAll(PDO::FETCH_ASSOC);
+//---------------- CHEMIN
+define("RACINE_SITE", $_SERVER['DOCUMENT_ROOT'] . "/PHP/moijv-git/");
+// echo RACINE_SITE;
+// echo '<pre>'; print_r($_SERVER); echo '</pre>';
+define("URL", 'https://localhost/PHP/moijv-git/');
 
+//---------------- VARIABLE
+$content = "";
+
+if($_POST)
+{
+	// Exo : si il n'y a pas d'erreur, réaliser le script permettant d'insérer un membre (requête préparé)
+	// $_POST['mdp'] = password_hash($_POST['mdp'], PASSWORD_DEFAULT);
+
+	$resultat = $pdo->prepare("INSERT INTO game(title,description,image,category,available) VALUES (:title, :description, :image, :category, :available)");
+
+	$resultat->bindValue(':title', $_POST['title'], PDO::PARAM_STR);
+	$resultat->bindValue(':description', $_POST['description'], PDO::PARAM_STR);
+	$resultat->bindValue(':image', $_POST['image'], PDO::PARAM_STR);
+	$resultat->bindValue(':category', $_POST['category'], PDO::PARAM_STR);
+	$resultat->bindValue(':available', $_POST['available'], PDO::PARAM_INT);
+
+	$resultat->execute();
+
+
+	$content .= '<div class="alert alert-success col-md-8 cold-md-offset-2 text-center">Jeu ajouté.</div>';
+
+}
+
+echo $content;
 ?>
 
 <!DOCTYPE html>
@@ -81,53 +110,37 @@ $games = $queryGame->fetchAll(PDO::FETCH_ASSOC);
 
         <div class="col-lg-9">
 
-          <div id="carouselExampleIndicators" class="carousel slide my-4" data-ride="carousel">
-            <ol class="carousel-indicators">
-              <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-              <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-              <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-            </ol>
-            <div class="carousel-inner" role="listbox">
-              <div class="carousel-item active">
-                <img class="d-block img-fluid" src="http://placehold.it/900x350" alt="First slide">
-              </div>
-              <div class="carousel-item">
-                <img class="d-block img-fluid" src="http://placehold.it/900x350" alt="Second slide">
-              </div>
-              <div class="carousel-item">
-                <img class="d-block img-fluid" src="http://placehold.it/900x350" alt="Third slide">
-              </div>
-            </div>
-            <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="sr-only">Next</span>
-            </a>
-          </div>
+          <form method="post" action="game_add.php" class="col-md-8 col-md-offset-2">
+			<h2 class="alert alert-info text-center">New game</h2>
 
-          <div class="row">
-			<?php foreach($games as $game) : ?>
-            <div class="col-lg-4 col-md-6 mb-4">
-              <div class="card h-100">
-                <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
-                <div class="card-body">
-                  <h4 class="card-title">
-                    <a href="#"><?php echo htmlspecialchars($game['title']); ?></a>
-                  </h4>
-                  <p class="card-text"><?php echo htmlspecialchars($game['description']); ?></p>
-                </div>
-                <div class="card-footer">
-                  <small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>
-                </div>
-              </div>
-            </div>
-            <?php endforeach; ?>
+			<div class="form-group">
+				<label for="title">Title</label>
+				<input type="text" class="form-control" id="title" name="title" placeholder="votre titre">
+			</div><br>
 
-          </div>
-          <!-- /.row -->
+			<div class="form-group">
+				<label for="description">Description</label>
+				<textarea class="form-control" id="description" name="description" placeholder="votre description"></textarea>
+			</div><br>
+
+			<div class="form-group">
+				<label for="image">Image</label>
+				<input type="file" class="form-control" id="image" name="image">
+			</div><br>
+
+			<div class="form-group">
+				<label for="category">Category</label>
+				<select class="form-control" name="category">
+					<option value="RPG">RPG</option>
+					<option value="FPS">FPS</option>
+					<option value="Puzzle Game">Puzzle Game</option>
+				</select>
+			</div><br>
+
+			<div class="form-group">
+				<button type="submit" class="col-md-12 btn btn-primary">Envoi</button>
+			</div><br>
+		  </form>
 
         </div>
         <!-- /.col-lg-9 -->
